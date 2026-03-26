@@ -50,5 +50,7 @@ VALUES ('Monitor 27"', 'Monitor 27" HD', 390000, 17, 1);
 INSERT INTO products (name, description, price, stock, active)
 VALUES ('Notebook Gamer', 'Notebook Gamer SSD 1TB, 16GB RAM', 890000, 12, 1);
 
+INSERT INTO products (name, description, price, stock, active)
+VALUES ('TV', 'TV 65" LED', 1299900, 12, 1);
 
 COMMIT;
