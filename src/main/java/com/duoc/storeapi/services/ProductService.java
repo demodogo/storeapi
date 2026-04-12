@@ -1,14 +1,16 @@
 package com.duoc.storeapi.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.duoc.storeapi.dto.ProductSearchRequest;
 import com.duoc.storeapi.dto.ProductUpdateRequest;
 import com.duoc.storeapi.exceptions.ResourceNotFoundException;
 import com.duoc.storeapi.models.Product;
 import com.duoc.storeapi.repositories.ProductRepository;
-
+import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +23,41 @@ public class ProductService {
     public List<Product> findAll() {
         log.info("Obteniendo todos los productos");
         return productRepository.findAll();
+    }
+
+    public List<Product> search(ProductSearchRequest params) {
+        log.info("Buscando productos con: {}", params);
+
+        return productRepository.findAll((root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (params.getName() != null && !params.getName().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("name")), "%" + params.getName().toLowerCase() + "%"));
+            }
+
+            if (params.getDescription() != null && !params.getDescription().isEmpty()) {
+                predicates.add(cb.like(cb.lower(root.get("description")), "%" + params.getDescription().toLowerCase() + "%"));
+            }
+
+            if (params.getMinPrice() != null && params.getMaxPrice() != null) {
+                if (params.getMinPrice().compareTo(params.getMaxPrice()) > 0) {
+                    throw new IllegalArgumentException("El precio mínimo no puede ser mayor al precio máximo");
+                }
+            }
+            
+            if (params.getMinPrice() != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), params.getMinPrice()));
+            }
+            if (params.getMaxPrice() != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), params.getMaxPrice()));
+            }
+
+            if (params.getActive() != null) {
+                predicates.add(cb.equal(root.get("active"), params.getActive()));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        });
     }
 
     public Product findById(Long id) {

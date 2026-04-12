@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.duoc.storeapi.dto.ProductSearchRequest;
 import com.duoc.storeapi.dto.ProductUpdateRequest;
 import com.duoc.storeapi.models.Product;
 import com.duoc.storeapi.services.ProductService;
@@ -21,6 +22,7 @@ import com.duoc.storeapi.utils.AuthUtil;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/products")
@@ -34,6 +36,13 @@ public class ProductController {
         AuthUtil.requireAuthedUser(headerUserId, role);
         return ResponseEntity.ok(productService.findAll());
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Product>> searchProducts(@Valid ProductSearchRequest params, @RequestHeader(value="X-User-Role", required=false) String role, @RequestHeader(value="X-User-Id", required=false) Long headerUserId) {
+        AuthUtil.requireAuthedUser(headerUserId, role);
+        return ResponseEntity.ok(productService.search(params));
+    }
+    
 
     @GetMapping("/{id}")
     public ResponseEntity<Product> getProductById(@PathVariable Long id, @RequestHeader(value="X-User-Role", required=false) String role, @RequestHeader(value="X-User-Id", required=false) Long headerUserId) {
