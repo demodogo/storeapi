@@ -32,10 +32,14 @@ public class ProductService {
             List<Predicate> predicates = new ArrayList<>();
 
             if (params.getName() != null && !params.getName().isEmpty()) {
-                predicates.add(cb.like(cb.lower(root.get("name")), "%" + params.getName().toLowerCase() + "%"));
+                String searchPattern = "%" + params.getName().trim().toLowerCase() + "%";
+                predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("name")), searchPattern),
+                    cb.like(cb.lower(root.get("description")), searchPattern)
+                ));
             }
 
-            if (params.getDescription() != null && !params.getDescription().isEmpty()) {
+            if (params.getDescription() != null && !params.getDescription().isEmpty() && (params.getName() == null || params.getName().isEmpty())) {
                 predicates.add(cb.like(cb.lower(root.get("description")), "%" + params.getDescription().toLowerCase() + "%"));
             }
 
